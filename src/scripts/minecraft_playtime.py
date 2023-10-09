@@ -70,20 +70,20 @@ def get_log_playtime(path: Path, tzinfo: datetime.tzinfo | None):
     if not path.is_file():
         return
 
-    if path.name == "latest.log":
-        date = datetime.date.fromtimestamp(path.stat().st_mtime)
-        lines = decode_log(path.read_bytes()).splitlines()
-    else:
-        date = get_log_date(path)
-        if not date:
-            return
+    try:
+        if path.name == "latest.log":
+            date = datetime.date.fromtimestamp(path.stat().st_mtime)
+            lines = decode_log(path.read_bytes()).splitlines()
+        else:
+            date = get_log_date(path)
+            if not date:
+                return
 
-        with gzip.open(path) as f:
-            try:
+            with gzip.open(path) as f:
                 lines = decode_log(f.read()).splitlines()
-            except Exception as e:
-                e.add_note(f"  File: {path}")
-                raise
+    except Exception as e:
+        e.add_note(f"  File: {path}")
+        raise
 
     for line in lines:
         if min_dt := get_log_line_dt(date, line, tzinfo):
