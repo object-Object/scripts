@@ -7,13 +7,20 @@ name = "scripts"
 version = "0.1.0"
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "typer~=0.9.0",
+    "pytz~=2023.3",
+    "tqdm~=4.66",
+]
 
 [project.optional-dependencies]
 dev = [
-    "black==23.7.0",
+    "black==23.9.1",
     "isort==5.12.0",
 ]
+
+[project.scripts]
+minecraft-playtime = "scripts.minecraft_playtime:app"
 
 [tool.hatch.build.targets.sdist]
 only-include = ["src/scripts"]
