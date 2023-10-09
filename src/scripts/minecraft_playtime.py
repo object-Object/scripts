@@ -4,7 +4,7 @@ import os
 import platform
 import re
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated, Iterable, Optional
 
 import pytz
 import typer
@@ -50,8 +50,12 @@ def main(
         for path in files_bar:
             files_bar.set_postfix_str(path.name)
 
-            if playtime := get_log_playtime(path, tzinfo):
-                instance_playtime += playtime
+            try:
+                if playtime := get_log_playtime(path, tzinfo):
+                    instance_playtime += playtime
+            except Exception as e:
+                e.add_note(f"  File: {path}")
+                raise
 
         total_playtime += instance_playtime
         short_path = Path("...", *instance.parts[-2:])
@@ -70,30 +74,26 @@ def get_log_playtime(path: Path, tzinfo: datetime.tzinfo | None):
     if not path.is_file():
         return
 
-    try:
-        if path.name == "latest.log":
-            date = datetime.date.fromtimestamp(path.stat().st_mtime)
-            lines = decode_log(path.read_bytes()).splitlines()
-        else:
-            date = get_log_date(path)
-            if not date:
-                return
-
-            with gzip.open(path) as f:
-                lines = decode_log(f.read()).splitlines()
-    except Exception as e:
-        e.add_note(f"  File: {path}")
-        raise
-
-    for line in lines:
-        if min_dt := get_log_line_dt(date, line, tzinfo):
-            break
+    if path.name == "latest.log":
+        date = datetime.date.fromtimestamp(path.stat().st_mtime)
+        lines = decode_log(path.read_bytes()).splitlines()
     else:
+        date = get_log_date(path)
+        if not date:
+            return
+
+        with gzip.open(path) as f:
+            lines = decode_log(f.read()).splitlines()
+
+    min_dt = get_first_dt(date, lines, tzinfo)
+    max_dt = get_first_dt(date, reversed(lines), tzinfo)
+    if not (min_dt and max_dt):
         return
 
-    for line in reversed(lines):
-        if max_dt := get_log_line_dt(date, line, tzinfo):
-            return max_dt - min_dt
+    diff = max_dt - min_dt
+    if diff.total_seconds() < 0:
+        raise ValueError(min_dt, max_dt, diff)
+    return diff
 
 
 def decode_log(data: bytes) -> str:
@@ -118,6 +118,16 @@ def get_log_date(path: Path):
         month=int(match[2]),
         day=int(match[3]),
     )
+
+
+def get_first_dt(
+    date: datetime.date,
+    lines: Iterable[str],
+    tzinfo: datetime.tzinfo | None,
+):
+    for line in lines:
+        if dt := get_log_line_dt(date, line, tzinfo):
+            return dt
 
 
 def get_log_line_dt(date: datetime.date, line: str, tzinfo: datetime.tzinfo | None):
