@@ -11,12 +11,12 @@ dependencies = [
     "typer~=0.9.0",
     "pytz~=2023.3",
     "tqdm~=4.66",
+    "pytest~=7.4.3",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "black==23.9.1",
-    "isort==5.12.0",
+    "ruff",
 ]
 
 [project.scripts]
@@ -28,19 +28,54 @@ only-include = ["src/scripts"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/scripts"]
 
-[tool.isort]
-profile = "black"
-combine_as_imports = true
-known_first_party = ["hexdoc"]
+[tool.ruff]
+extend-select = [
+    "I", # import sorting
+]
+extend-ignore = [
+    # covered by Pyright
+    "F821", # undefined variable
+    "F401", # imported but unused
+    "F841", # unused variable
+]
+extend-exclude = [
+    "vendor",
+    "venv",
+    "**/.*",
+    "**/node_modules",
+    "**/__pycache__",
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
 
 [tool.pyright]
 pythonVersion = "3.11"
 pythonPlatform = "All"
 
-enableExperimentalFeatures = true
+venvPath = "."
+venv = "venv"
+
+include = [
+    "src",
+    "test",
+]
+extraPaths = [
+    "vendor",
+]
+exclude = [
+    "noxfile.py",
+    "vendor",
+    "**/venv",
+    "**/.*",
+    "**/node_modules",
+    "**/__pycache__",
+    "**/template",
+]
 
 typeCheckingMode = "basic"
 
+enableExperimentalFeatures = true
 strictDictionaryInference = true
 strictListInference = true
 strictSetInference = true
@@ -48,9 +83,9 @@ strictSetInference = true
 reportAssertAlwaysTrue = "error"
 reportConstantRedefinition = "error"
 reportDeprecated = "error"
-reportDuplicateImport = "error"
 reportFunctionMemberAccess = "error"
 reportIncompatibleMethodOverride = "error"
+reportIncompatibleVariableOverride = "error"
 reportIncompleteStub = "error"
 reportInconsistentConstructor = "error"
 reportInvalidStringEscapeSequence = "error"
@@ -58,7 +93,6 @@ reportInvalidStubStatement = "error"
 reportInvalidTypeVarUse = "error"
 reportMatchNotExhaustive = "error"
 reportMissingParameterType = "error"
-reportMissingTypeStubs = "error"
 reportOverlappingOverload = "error"
 reportSelfClsParameterName = "error"
 reportTypeCommentUsage = "error"
@@ -77,13 +111,14 @@ reportPrivateUsage = "warning"
 reportUnknownArgumentType = "warning"
 reportUnknownLambdaType = "warning"
 reportUnknownMemberType = "warning"
+reportUnknownVariableType = "warning"
 reportUnnecessaryComparison = "warning"
-reportUnnecessaryIsInstance =  	"warning"
+reportUnnecessaryIsInstance = "warning"
 reportUnusedClass = "warning"
 reportUnusedExpression = "warning"
 reportUnusedFunction = "warning"
 reportUnusedImport = "warning"
 reportUnusedVariable = "warning"
 
-reportUnknownVariableType = "none"
-reportIncompatibleVariableOverride = "none"
+reportMissingTypeStubs = "none"
+reportDuplicateImport = "none"
