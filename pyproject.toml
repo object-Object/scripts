@@ -12,11 +12,17 @@ dependencies = [
     "pytz~=2023.3",
     "tqdm~=4.66",
     "pytest~=7.4.3",
+    "pandas~=2.2.0",
+    "apple-health~=2.0.0",
+    "casefy~=0.1.7",
+    "pyarrow",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "ipykernel",
     "ruff",
+    "nbstripout",
 ]
 
 [project.scripts]
@@ -110,7 +116,6 @@ reportMissingTypeArgument = "warning"
 reportPrivateUsage = "warning"
 reportUnknownArgumentType = "warning"
 reportUnknownLambdaType = "warning"
-reportUnknownMemberType = "warning"
 reportUnknownVariableType = "warning"
 reportUnnecessaryComparison = "warning"
 reportUnnecessaryIsInstance = "warning"
@@ -122,3 +127,4 @@ reportUnusedVariable = "warning"
 
 reportMissingTypeStubs = "none"
 reportDuplicateImport = "none"
+reportUnknownMemberType = "none"
